@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import UpdateCard from "@/components/UpdateCard";
 import ThemeToggle from "@/components/ThemeToggle";
-import { Search, Filter, Upload } from "lucide-react";
+import { Search, Filter, Upload, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import type { PubgUpdate } from "@shared/schema";
 import {
   Dialog,
   DialogContent,
@@ -23,38 +25,22 @@ export default function History() {
   const [password, setPassword] = useState("");
   const { toast } = useToast();
 
-  //TODO: Remove mock functionality - replace with real data from backend
-  const updates = [
-    {
-      id: 1,
-      versionName: "2.5.0",
-      releaseDate: "Mar 2024",
-      year: "2024",
-      majorFeatures: ["New Weapon: FAMAS", "Erangel 2.0", "Metro Royale Season 3"],
-      weaponChanges: ["M416 recoil reduced", "AWM damage buffed"],
-      mapChanges: ["Erangel visual overhaul", "New compounds added"],
+  const { data: updates, isLoading } = useQuery<PubgUpdate[]>({
+    queryKey: ["/api/pubg/updates", selectedYear],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (selectedYear) params.append("year", selectedYear);
+      const response = await fetch(`/api/pubg/updates?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch updates");
+      return response.json();
     },
-    {
-      id: 2,
-      versionName: "2.4.0",
-      releaseDate: "Jan 2024",
-      year: "2024",
-      majorFeatures: ["Ranked Season 31", "New Mode: Arena Training", "UI Improvements"],
-      weaponChanges: ["UMP45 fire rate increased"],
-      mapChanges: [],
-    },
-    {
-      id: 3,
-      versionName: "2.3.0",
-      releaseDate: "Nov 2023",
-      year: "2023",
-      majorFeatures: ["Livik 2.0", "New Vehicle: Monster Truck", "Season Updates"],
-      weaponChanges: ["AKM damage increased", "M762 recoil adjusted"],
-      mapChanges: ["Livik map redesign", "New areas added"],
-    },
-  ];
+  });
 
-  const years = ["2024", "2023", "2022", "2021", "2020"];
+  const years = useMemo(() => {
+    if (!updates) return [];
+    const uniqueYears = Array.from(new Set(updates.map(u => u.year)));
+    return uniqueYears.sort((a, b) => parseInt(b) - parseInt(a));
+  }, [updates]);
 
   const handleUpload = () => {
     //TODO: Remove mock functionality - implement real password check
@@ -90,14 +76,19 @@ export default function History() {
     }
   };
 
-  const filteredUpdates = updates.filter((update) => {
-    const matchesSearch =
-      !searchQuery ||
-      update.versionName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      update.majorFeatures.some((f) => f.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesYear = !selectedYear || update.year === selectedYear;
-    return matchesSearch && matchesYear;
-  });
+  const filteredUpdates = useMemo(() => {
+    if (!updates) return [];
+    
+    return updates.filter((update) => {
+      const matchesSearch =
+        !searchQuery ||
+        update.versionName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        update.majorFeatures.some((f) => f.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        update.weaponChanges?.some((w) => w.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        update.mapChanges?.some((m) => m.toLowerCase().includes(searchQuery.toLowerCase()));
+      return matchesSearch;
+    });
+  }, [updates, searchQuery]);
 
   return (
     <div className="pb-20 min-h-screen">
@@ -159,7 +150,11 @@ export default function History() {
 
       {/* Updates List */}
       <div className="p-4 space-y-4 max-w-2xl mx-auto">
-        {filteredUpdates.length === 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : filteredUpdates.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">No updates found</p>
           </div>
@@ -170,8 +165,8 @@ export default function History() {
               versionName={update.versionName}
               releaseDate={update.releaseDate}
               majorFeatures={update.majorFeatures}
-              weaponChanges={update.weaponChanges}
-              mapChanges={update.mapChanges}
+              weaponChanges={update.weaponChanges || []}
+              mapChanges={update.mapChanges || []}
               testId={`update-card-${update.id}`}
             />
           ))

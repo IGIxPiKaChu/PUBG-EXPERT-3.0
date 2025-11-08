@@ -3,18 +3,22 @@ import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
 import StrategyCard from "@/components/StrategyCard";
 import ThemeToggle from "@/components/ThemeToggle";
-import { Trophy, Target, TrendingUp, Zap, Calendar, ArrowRight } from "lucide-react";
+import { Trophy, Target, TrendingUp, Zap, Calendar, ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import type { PubgUpdate } from "@shared/schema";
 import heroImage from "@assets/generated_images/PUBG_tactical_map_hero_image_9b570444.png";
 
 export default function Home() {
-  //TODO: Remove mock functionality - replace with real data
-  const todayInHistory = {
-    date: "March 15",
-    year: "2023",
-    version: "2.5.0",
-    features: ["New weapon: FAMAS", "Erangel 2.0 released"],
-  };
+  const { data: todayUpdate, isLoading: loadingToday } = useQuery<PubgUpdate[]>({
+    queryKey: ["/api/pubg/today-in-history"],
+  });
+
+  const { data: allUpdates } = useQuery<PubgUpdate[]>({
+    queryKey: ["/api/pubg/updates"],
+  });
+
+  const todayInHistory = todayUpdate?.[0];
 
   const recentStrategies = [
     {
@@ -74,18 +78,33 @@ export default function Home() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <p className="text-lg font-heading font-bold" data-testid="text-history-date">
-              {todayInHistory.date}, {todayInHistory.year}
-            </p>
-            <p className="text-sm font-medium">Update {todayInHistory.version}</p>
-            <ul className="space-y-1">
-              {todayInHistory.features.map((feature, i) => (
-                <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                  <span className="text-accent mt-0.5">•</span>
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
+            {loadingToday ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : todayInHistory ? (
+              <>
+                <p className="text-lg font-heading font-bold" data-testid="text-history-date">
+                  {todayInHistory.releaseDate}
+                </p>
+                <p className="text-sm font-medium">Update {todayInHistory.versionName}</p>
+                <ul className="space-y-1">
+                  {todayInHistory.majorFeatures.slice(0, 3).map((feature, i) => (
+                    <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                      <span className="text-accent mt-0.5">•</span>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                {todayInHistory.metaSummary && (
+                  <p className="text-xs text-muted-foreground pt-2 border-t border-border">
+                    {todayInHistory.metaSummary}
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">No update found for today</p>
+            )}
           </CardContent>
         </Card>
 
@@ -116,10 +135,10 @@ export default function Home() {
             />
             <StatCard
               icon={Zap}
-              label="Strategies"
-              value="28"
-              trend="Saved"
-              testId="stat-strategies"
+              label="Updates"
+              value={allUpdates?.length || 0}
+              trend="Total in database"
+              testId="stat-updates"
             />
           </div>
         </div>

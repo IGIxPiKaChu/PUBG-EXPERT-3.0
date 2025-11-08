@@ -1,0 +1,166 @@
+{
+  "updates": [
+    {
+      "id": 1,
+      "versionName": "2.5.0",
+      "releaseDate": "2024-03-15",
+      "year": "2024",
+      "majorFeatures": [
+        "New Weapon: FAMAS",
+        "Erangel 2.0 Released",
+        "Metro Royale Season 3",
+        "New Vehicle: Dirt Bike"
+      ],
+      "weaponChanges": [
+        "M416 recoil reduced by 15%",
+        "AWM damage buffed from 105 to 120",
+        "Vector fire rate increased",
+        "UMP45 attachment slots updated"
+      ],
+      "mapChanges": [
+        "Erangel visual overhaul",
+        "New compounds in Pochinki",
+        "Updated terrain textures",
+        "New cover points in open fields"
+      ],
+      "vehicleChanges": [
+        "Dirt Bike added to Erangel",
+        "Motorcycle speed increased"
+      ],
+      "metaSummary": "This update shifts the meta towards aggressive mid-range combat with M416 becoming more viable. AWM buff makes it the strongest sniper in the game."
+    },
+    {
+      "id": 2,
+      "versionName": "2.4.0",
+      "releaseDate": "2024-01-20",
+      "year": "2024",
+      "majorFeatures": [
+        "Ranked Season 31",
+        "New Mode: Arena Training",
+        "UI Improvements",
+        "Performance Optimizations"
+      ],
+      "weaponChanges": [
+        "UMP45 fire rate increased",
+        "Kar98k bullet velocity improved"
+      ],
+      "mapChanges": [],
+      "vehicleChanges": [],
+      "metaSummary": "Minor balance changes focusing on improving player experience and performance."
+    },
+    {
+      "id": 3,
+      "versionName": "2.3.0",
+      "releaseDate": "2023-11-10",
+      "year": "2023",
+      "majorFeatures": [
+        "Livik 2.0",
+        "New Vehicle: Monster Truck",
+        "Season 30 Updates",
+        "New Royale Pass"
+      ],
+      "weaponChanges": [
+        "AKM damage increased from 47 to 49",
+        "M762 recoil pattern adjusted",
+        "Mini14 spawn rate increased"
+      ],
+      "mapChanges": [
+        "Livik complete map redesign",
+        "New areas: Midtstein, Blomster",
+        "Updated loot distribution"
+      ],
+      "vehicleChanges": [
+        "Monster Truck added to Livik",
+        "Improved off-road capabilities"
+      ],
+      "metaSummary": "AKM becomes top-tier assault rifle. Livik 2.0 changes the pace of gameplay significantly."
+    },
+    {
+      "id": 4,
+      "versionName": "2.2.0",
+      "releaseDate": "2023-09-05",
+      "year": "2023",
+      "majorFeatures": [
+        "New Weapon: Mosin Nagant",
+        "Sanhok Revamp",
+        "Season 29 Launch"
+      ],
+      "weaponChanges": [
+        "Mosin Nagant added as world spawn",
+        "M416 recoil slightly increased",
+        "Groza damage nerfed"
+      ],
+      "mapChanges": [
+        "Sanhok visual updates",
+        "New compound: Resort"
+      ],
+      "vehicleChanges": [],
+      "metaSummary": "Mosin Nagant introduction provides accessible bolt-action alternative to Kar98k."
+    },
+    {
+      "id": 5,
+      "versionName": "2.1.0",
+      "releaseDate": "2023-07-12",
+      "year": "2023",
+      "majorFeatures": [
+        "New Game Mode: Intense Battle",
+        "Ranked 2.0",
+        "Voice Chat Improvements"
+      ],
+      "weaponChanges": [
+        "VSS damage increased",
+        "DP28 magazine capacity from 47 to 50"
+      ],
+      "mapChanges": [],
+      "vehicleChanges": [
+        "Buggy speed increased",
+        "UAZ durability improved"
+      ],
+      "metaSummary": "Quality of life improvements with minor weapon balancing."
+    }
+  ],
+  "weaponMeta": [
+    {
+      "id": 1,
+      "weaponName": "M416",
+      "versionName": "2.5.0",
+      "damageRating": 43,
+      "recoilRating": 28,
+      "fireRateRating": 80,
+      "attachmentsMeta": {
+        "slots": 5,
+        "recommended": ["Red Dot", "Vertical Grip", "Compensator", "Extended QuickDraw Mag"]
+      },
+      "spawnRateChange": "unchanged",
+      "isViable": true
+    },
+    {
+      "id": 2,
+      "weaponName": "M416",
+      "versionName": "2.4.0",
+      "damageRating": 43,
+      "recoilRating": 35,
+      "fireRateRating": 78,
+      "attachmentsMeta": {
+        "slots": 5,
+        "recommended": ["Red Dot", "Vertical Grip", "Compensator"]
+      },
+      "spawnRateChange": "unchanged",
+      "isViable": true
+    },
+    {
+      "id": 3,
+      "weaponName": "AKM",
+      "versionName": "2.3.0",
+      "damageRating": 49,
+      "recoilRating": 40,
+      "fireRateRating": 60,
+      "attachmentsMeta": {
+        "slots": 3,
+        "recommended": ["Red Dot", "Compensator", "Extended Mag"]
+      },
+      "spawnRateChange": "unchanged",
+      "isViable": true
+    }
+  ]
+}

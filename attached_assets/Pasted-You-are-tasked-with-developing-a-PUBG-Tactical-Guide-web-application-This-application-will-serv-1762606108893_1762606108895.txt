@@ -1,0 +1,138 @@
+You are tasked with developing a **PUBG Tactical Guide** web application. This application will serve as a comprehensive PUBG Mobile historian and strategy coach, leveraging Gemini AI to provide personalized advice based on a detailed historical dataset of PUBG Mobile updates (2018-2025). The application will be a modern web experience, deployed on **Vercel** and managed via **GitHub**.
+
+**Core Application Name:** PUBG Tactical Guide
+
+**Deployment Platform:** Vercel (Frontend & Serverless Functions)
+**Version Control:** GitHub
+
+---
+
+### I. Technology Stack & Architecture Overview
+
+*   **Frontend:**
+    *   **Framework:** React with TypeScript
+    *   **Build Tool:** Vite
+    *   **Styling:** Tailwind CSS (for a gaming-themed Material Design 3-inspired aesthetic)
+    *   **Routing:** React Router DOM
+    *   **State Management:** (Implicitly React Context/Hooks, or a library like Zustand/Jotai if needed)
+*   **Backend (Serverless Functions on Vercel):**
+    *   **Language:** TypeScript
+    *   **Runtime:** Node.js (Vercel's default for serverless functions)
+    *   **Purpose:**
+        *   Securely interact with the Gemini AI API (proxy requests).
+        *   Manage access to the PUBG historical database (CRUD operations).
+        *   Handle sensitive operations like password verification.
+*   **Database:**
+    *   **Type:** PostgreSQL (recommended for structured data and Vercel compatibility, e.g., using Supabase or Neon).
+    *   **ORM (Optional but Recommended):** Prisma (for easy interaction with PostgreSQL from TypeScript).
+    *   **Purpose:** Store all PUBG Mobile update history (2018-2025), weapon meta data, and potentially user profiles/conversation history.
+
+---
+
+### II. Core Features & Implementation Details
+
+**1. Update History Database (Backend & Frontend)**
+    *   **Data Model:**
+        *   `PubgUpdate`: `id` (PK), `versionName`, `releaseDate` (timestamp), `majorFeatures`, `weaponChanges` (JSON string), `mapChanges` (JSON string), `vehicleChanges` (JSON string), `metaSummary`, `imageUrl` (optional).
+        *   `WeaponMeta`: `id` (PK), `weaponName`, `versionName` (FK to PubgUpdate), `damageRating`, `recoilRating`, `fireRateRating`, `attachmentsMeta` (JSON string), `spawnRateChange`, `isViable`.
+    *   **Initial Data Population:** A comprehensive `PUBG_updates.json` file (2018-2025 data) will be provided. This JSON data needs to be *imported into the PostgreSQL database* upon initial setup (e.g., via a seed script or direct insertion). The frontend will *not* contain this large dataset directly.
+    *   **Frontend UI:**
+        *   Dedicated "Update History" page (`/history`).
+        *   Displays updates in a scrollable, searchable list (e.g., cards or a timeline view).
+        *   Ability to search updates by version, year, or feature.
+        *   Detailed view for each update, showing weapon/meta changes.
+
+**2. Personalized Strategy Coach (Frontend & Backend/Gemini AI)**
+    *   **User Profile Management (Frontend & Backend/DB):**
+        *   Frontend UI to input/edit user stats: `current_season`, `preferred_maps` (multi-select), `play_style` (aggressive/passive/balanced), `favorite_weapons` (multi-select), `current_challenges` (close_combat, late_game, etc.).
+        *   This `PlayerProfile` data should be stored in the PostgreSQL database (e.g., in a `UserProfile` table).
+    *   **Strategy Generation (Frontend -> Backend/Gemini AI):**
+        *   When a user requests advice:
+            1.  Frontend sends the current `PlayerProfile` data.
+            2.  Frontend fetches relevant historical context from the backend (`/api/pubg-data`) based on player's preferences (e.g., weapon meta for preferred weapons, map changes for preferred maps).
+            3.  Frontend sends a `GeminiPromptRequest` (containing `player_profile` and `historical_context`) to the `/api/gemini-proxy` serverless function.
+            4.  The `/api/gemini-proxy` function securely calls Google's Gemini AI API.
+            5.  Gemini AI processes the input (using its general knowledge and the provided historical context) and returns a structured `GeminiPromptResponse` (strategy advice, historical insights).
+            6.  Frontend displays the personalized advice to the user.
+    *   **Weapon Recommendations by Game Version:** Gemini AI will suggest weapons based on the current meta and historical dominance.
+
+**3. Meta Analysis Tool (Frontend & Backend/DB)**
+    *   Frontend UI to compare weapon/meta changes across different seasons/updates.
+    *   Interactive charts (e.g., using a library like Chart.js) to visualize weapon evolution (damage, recoil, fire rate, spawn rates).
+    *   Frontend queries backend (`/api/pubg-data`) for specific weapon/version data.
+
+**4. Real-Time Advice Engine (Frontend, Backend/Gemini AI)**
+    *   A dashboard component to provide situation-specific tactics.
+    *   User input (e.g., "I'm in final circle, 3 enemies left, no cover") will be sent to Gemini AI (via `/api/gemini-proxy`) along with current player profile and general historical context.
+    *   Gemini AI generates and returns immediate tactical recommendations.
+
+---
+
+### III. Special Features
+
+*   **"This Day in PUBG History":** A dashboard component displaying historical updates that occurred on the current date, fetched from the database.
+*   **Meta Comparison Tool:** UI for side-by-side comparison of two selected update versions, highlighting key meta shifts.
+*   **Weapon Evolution Tracker:** Visual charts showing how specific weapon stats and meta-relevance changed over time.
+
+---
+
+### IV. Admin Upload Feature (Password Protected)
+
+*   **UI Integration:** On the "Update History" page, include an "Upload JSON" icon (e.g., cloud upload).
+*   **Password Protection:**
+    *   When the "Upload JSON" icon is clicked, a modal dialog prompts the user for an admin password.
+    *   **Hardcoded Password (for this exercise):** "PiKaChu".
+    *   **Security (Production Requirement):** In a real application, this password would be securely hashed on the backend (e.g., `ADMIN_PASSWORD_HASH` stored as a Vercel environment variable) and verified against the hash. The client should *never* know the plain password.
+*   **File Upload:**
+    *   If the correct password is provided, the frontend's file picker (`<input type="file" />`) is triggered to allow the user to select a `PUBG_updates.json` file.
+    *   The selected JSON file content is read by the frontend.
+    *   **JSON Schema Validation:** The frontend should validate the incoming JSON against a defined schema (e.g., using `Zod`) to ensure data integrity before sending to the backend.
+*   **Backend Processing (`/api/pubg-data/upload`):**
+    *   The frontend sends the validated JSON content and the admin password (as a header, e.g., `X-Admin-Password`) to the serverless function.
+    *   The serverless function performs a server-side password check.
+    *   If authorized, it parses the JSON and performs **UPSERT** operations (insert or update) into the PostgreSQL database, handling potential conflicts/existing records.
+    *   Provides success/failure feedback to the frontend.
+
+---
+
+### V. Frontend Project Structure (Vite + React + TS)
+---
+
+### VI. Backend (Serverless Function) Project Structure
+
+(Details within the `api/` folder of the main project)
+
+*   Each `.ts` file in `api/` corresponds to a Vercel Serverless Function endpoint (e.g., `api/pubg-data.ts` -> `/api/pubg-data`).
+*   Database interaction code (e.g., Prisma client setup, schema) should reside here or in a shared `db.ts` utility.
+*   Sensitive API keys (`GEMINI_API_KEY`, `DATABASE_URL`, `ADMIN_PASSWORD_HASH`) must be stored as **Vercel Environment Variables** and accessed via `process.env.VAR_NAME`.
+
+---
+
+### VII. Deployment Instructions
+
+1.  **GitHub Repository:** Create a new public or private GitHub repository for this project.
+2.  **Clone & Setup:** Clone the repository locally and set up the Vite/React project structure.
+3.  **Database Setup:**
+    *   Set up a PostgreSQL database (e.g., on Supabase, Neon, or a local instance for development).
+    *   Define your `PubgUpdate` and `WeaponMeta` schemas in your database ORM (e.g., Prisma schema).
+    *   Run a migration/seed script to initially populate the database with the 2018-2025 `PUBG_updates.json` data.
+4.  **Local Environment Variables:** Create a `.env.local` file at the root of your project with:
+    ```
+    VITE_GEMINI_API_BASE_URL=/api/gemini-proxy # Proxy for security
+    DATABASE_URL="YOUR_POSTGRES_CONNECTION_STRING"
+    GEMINI_API_KEY="YOUR_GOOGLE_GEMINI_API_KEY"
+    ADMIN_PASSWORD_HASH="YOUR_HASHED_PIKACHU_PASSWORD" # Use bcrypt to generate a hash
+    ```
+    *(Note: `VITE_` prefix for client-side accessible variables in Vite. Other variables are server-only.)*
+5.  **Install Dependencies:** `npm install` or `yarn install`.
+6.  **Develop & Test:** Build out the frontend components and test backend API interactions locally.
+7.  **Commit & Push:** Commit all your code (excluding `.env.local`) to your GitHub repository.
+8.  **Vercel Deployment:**
+    *   Go to [vercel.com](https://vercel.com/) and link your GitHub repository.
+    *   Configure **Environment Variables** within Vercel's project settings (for `DATABASE_URL`, `GEMINI_API_KEY`, `ADMIN_PASSWORD_HASH`). These are crucial for your serverless functions.
+    *   Vercel will automatically detect the Vite project and deploy both the frontend and the serverless functions.
+9.  **Continuous Deployment:** Subsequent pushes to your main branch on GitHub will automatically trigger new deployments on Vercel.
+
+---
+
+This comprehensive prompt covers all aspects of your request, guiding you from an Android APK concept to a fully deployable web application on Vercel with GitHub integration, including specific features and security considerations.
